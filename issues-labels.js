@@ -7,7 +7,7 @@ var rl = readline.createInterface({
   output: process.stdout
 });
 
-console.log("\n Intelligaia GITHUB Labels and Issues  \n--------------------------------------");
+console.log("\n Intelligaia GITHUB Labels and Issues  \n------------------------------------------------------");
 
 rl.question('Please enter your GITHUB user name, password and repository name:', (data) => {
 
@@ -16,36 +16,41 @@ rl.question('Please enter your GITHUB user name, password and repository name:',
   let issues = ['{"title":"1. Discover(D1): Project Kick-off tasks for PM"}', '{"title":"2. Discover(D1): Documentation tasks for PM"}', '{"title":"6. Discover(D1): Create current customer journey map"}', '{"title":"3. Discover(D1): Project Planning task for PM"}', '{"title":"4. Discover(D1): Project Personas"}', '{"title":"5.Discover(D1): Collect Requirements/User Stories from Client"}'];
 
   data = data.split(' ');
-  var text = "\n USER=" + data[0] + "\n PASS=" + data[1] + "\n REPO=" + data[2];
-  text += "\n # Delete default labels";
+  if (data.length === 3) {
+    var text = "\n USER=" + data[0] + "\n PASS=" + data[1] + "\n REPO=" + data[2];
+    text += "\n # Delete default labels";
 
-  for (let label of labels)
-    text += '\n curl --user "$USER:$PASS" --include --request DELETE "https://api.github.com/repos/$USER/$REPO/labels/' + label + '"';
+    for (let label of labels)
+      text += '\n curl --user "$USER:$PASS" --include --request DELETE "https://api.github.com/repos/$USER/$REPO/labels/' + label + '"';
 
-  text += "\n # Create new labels";
+    text += "\n # Create new labels";
 
-  for (let label of newLabelData)
-    text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + label + "'" + ' "https://api.github.com/repos/$USER/$REPO/labels"';
+    for (let label of newLabelData)
+      text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + label + "'" + ' "https://api.github.com/repos/$USER/$REPO/labels"';
 
     text += "\n # Create new issues";
 
     for (let issue of issues)
       text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + issue + "'" + ' "https://api.github.com/repos/$USER/$REPO/issues"';
-  
+
     fs.writeFile("label-issue.sh", text, function (err) {
-    if (err) {
-      return console.log(err);
-    }
-    console.log("Deleting the existing labels, adding new labels and issues to GITHUB");    
-  });
+      if (err) {
+        return console.log(err);
+      }
+      console.log("Deleting the existing labels, adding new labels and issues to GITHUB");
+    });
 
-  rl.close();
+    rl.close();
 
-  setTimeout(() => {
-    const output = execSync('label-issue.sh', { encoding: 'utf-8' });  // For executing the Bash Command
-    console.log("Completed  \n--------------------------------------");
-  }, 1000);
-
+    setTimeout(() => {
+      const output = execSync('label-issue.sh', { encoding: 'utf-8' });  // For executing the Bash Command
+      console.log("Completed  \n------------------------------------------------------");
+    }, 1000);
+  }
+  else {
+    rl.close();
+    console.log("Insufficient parameters,terminating the project.  \n------------------------------------------------------");
+  }    
 });
 
 
