@@ -17,21 +17,26 @@ rl.question('Please enter your GITHUB user name, password and repository name:',
 
   data = data.split(' ');
   if (data.length === 3) {
+    fs.writeFile("Gitlog.txt", '', function (err) {
+      if (err) {
+        return console.log(err);
+      }
+    });
     var text = "\n USER=" + data[0] + "\n PASS=" + data[1] + "\n REPO=" + data[2];
     text += "\n # Delete default labels";
 
     for (let label of labels)
-      text += '\n curl --user "$USER:$PASS" --include --request DELETE "https://api.github.com/repos/$USER/$REPO/labels/' + label + '"';
+      text += '\n curl --user "$USER:$PASS" --include --request DELETE "https://api.github.com/repos/$USER/$REPO/labels/' + label + '" >> Gitlog.txt';
 
     text += "\n # Create new labels";
 
     for (let label of newLabelData)
-      text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + label + "'" + ' "https://api.github.com/repos/$USER/$REPO/labels"';
+      text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + label + "'" + ' "https://api.github.com/repos/$USER/$REPO/labels" >> Gitlog.txt';
 
     text += "\n # Create new issues";
 
     for (let issue of issues)
-      text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + issue + "'" + ' "https://api.github.com/repos/$USER/$REPO/issues"';
+      text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + issue + "'" + ' "https://api.github.com/repos/$USER/$REPO/issues" >> Gitlog.txt';
 
     fs.writeFile("label-issue.sh", text, function (err) {
       if (err) {
@@ -50,7 +55,8 @@ rl.question('Please enter your GITHUB user name, password and repository name:',
   else {
     rl.close();
     console.log("Insufficient parameters,terminating the project.  \n------------------------------------------------------");
-  }    
+  }
+  console.log("For detailed log, you can check Gitlog.txt file.");
 });
 
 
