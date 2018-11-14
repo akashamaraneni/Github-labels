@@ -16,8 +16,8 @@ rl.question('Please enter your GITHUB user name, password and repository name:',
   let issues = ['{"title":"1. Discover(D1): Project Kick-off tasks for PM"}', '{"title":"2. Discover(D1): Documentation tasks for PM"}', '{"title":"6. Discover(D1): Create current customer journey map"}', '{"title":"3. Discover(D1): Project Planning task for PM"}', '{"title":"4. Discover(D1): Project Personas"}', '{"title":"5.Discover(D1): Collect Requirements/User Stories from Client"}'];
 
   data = data.split(' ');
-  if (data.length === 3) {
-    fs.writeFile("Gitlog.txt", '', function (err) {
+  if (data.length === 3) { //To check for sufficiency of parameters
+    fs.writeFile("Gitlog.txt", '', function (err) { //creating a file to collect log information.
       if (err) {
         return console.log(err);
       }
@@ -38,7 +38,7 @@ rl.question('Please enter your GITHUB user name, password and repository name:',
     for (let issue of issues)
       text += '\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + issue + "'" + ' "https://api.github.com/repos/$USER/$REPO/issues" >> Gitlog.txt';
 
-    fs.writeFile("label-issue.sh", text, function (err) {
+    fs.writeFile("label-issue.sh", text, function (err) { //creating a script file.
       if (err) {
         return console.log(err);
       }
@@ -48,15 +48,37 @@ rl.question('Please enter your GITHUB user name, password and repository name:',
     rl.close();
 
     setTimeout(() => {
-      const output = execSync('label-issue.sh', { encoding: 'utf-8' });  // For executing the Bash Command
-      console.log("Completed  \n------------------------------------------------------");
+      const output = execSync('label-issue.sh', { encoding: 'utf-8' });  // For executing the Bash Command      
     }, 1000);
   }
   else {
     rl.close();
     console.log("Insufficient parameters,terminating the project.  \n------------------------------------------------------");
-  }
-  console.log("For detailed log, you can check Gitlog.txt file.");
+  }  
+  setTimeout(() => {
+    var command = [];
+    command.push("Start");
+
+    for (let label of labels)
+      command.push('\n curl --user "$USER:$PASS" --include --request DELETE "https://api.github.com/repos/$USER/$REPO/labels/' + label + '"');
+
+    for (let label of newLabelData)
+      command.push('\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + label + "'" + ' "https://api.github.com/repos/$USER/$REPO/labels"');
+
+    for (let issue of issues)
+      command.push('\n curl --user "$USER:$PASS" --include --request POST --data ' + "'" + issue + "'" + ' "https://api.github.com/repos/$USER/$REPO/issues"');
+
+    console.log("\n------------------------Log------------------------------");
+    fs.readFile('Gitlog.txt', 'utf8', function (err, contents) { //Reading log file.
+      contents = contents.split('HTTP/1.1');
+      for (let i = 1; i < contents.length; i++) {
+        console.log("Log" + i + ")");
+        console.log("Command: " + command[i]);
+        console.log("Result: \n" + 'HTTP/1.1' + contents[i]);
+      }
+      console.log("\n-------------------------Completed---------------------------");
+    });
+  }, 1100);
 });
 
 
